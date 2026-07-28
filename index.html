@@ -1,0 +1,291 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Provable and Robust Wavefront Sensing via Self-Reference Interferometry</title>
+<meta name="description" content="European Conference on Computer Vision - ECCV 2026 (Oral): a self-reference interferometric framework for wavefront sensing using coprime pixel shifts, with provable robustness guarantees.">
+<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="assets/katex/katex.min.css">
+<script defer src="assets/katex/katex.min.js"></script>
+<script defer src="assets/katex/contrib/auto-render.min.js"></script>
+<script defer>
+document.addEventListener("DOMContentLoaded", function () {
+  renderMathInElement(document.body, {
+    delimiters: [
+      {left: "\\(", right: "\\)", display: false},
+      {left: "\\[", right: "\\]", display: true}
+    ]
+  });
+});
+</script>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <h1>Provable and Robust Wavefront Sensing<br>via Self-Reference Interferometry</h1>
+    <p class="venue">European Conference on Computer Vision 2026 <span class="oral-tag">Oral</span></p>
+
+    <ul class="authors">
+      <li><a href="https://nebiyouten.github.io/">Nebiyou Yismaw</a><sup>1</sup></li>
+      <li>Vishwanath Saragadam<sup>1</sup></li>
+      <li>Aswin&nbsp;C.&nbsp;Sankaranarayanan<sup>2</sup></li>
+      <li>M.&nbsp;Salman&nbsp;Asif<sup>1</sup></li>
+    </ul>
+
+    <ul class="affiliations">
+      <li><sup>1</sup>University of California, Riverside</li>
+      <li><sup>2</sup>Carnegie Mellon University</li>
+    </ul>
+
+    <nav class="badges">
+      <a class="badge" href="assets/paper.pdf">Paper</a>
+      <a class="badge" href="assets/supplementary.pdf">Supplementary</a>
+      <a class="badge" href="https://arxiv.org/abs/2604.03564" title="arXiv link">arXiv </a>
+      <a class="badge todo" href="#" title="Coming soon: add GitHub link">Code <span>Coming soon</span></a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <section class="teaser">
+    <p class="lead">Overview of our proposed self-reference wavefront sensing method.</p>
+    <img src="assets/intro_figure_v5.png" alt="Overview of coprime-shift self-reference wavefront sensing">
+    <dl class="teaser-legend">
+      <div>
+        <dt>(a)</dt>
+        <dd>Interference of the incoming wavefront with its spatially shifted copy (i.e. self reference)
+          provides pairwise phase differences among shifted pixels.</dd>
+      </div>
+      <div>
+        <dt>(b)</dt>
+        <dd>Phasor differences measured at multiple shifts are propagated using our proposed graph-based
+          algorithm to recover the global phase profile.</dd>
+      </div>
+      <div>
+        <dt>(c)</dt>
+        <dd>The recovered phase enables applications such as target refocusing and imaging through a
+          diffuser.</dd>
+      </div>
+    </dl>
+  </section>
+
+  <section>
+    <h2>Abstract</h2>
+    <p>
+      Wavefront sensing involves estimating the phase and intensity of light, enabling a wide range of
+      imaging applications, from adaptive optics and astronomy to biomedical imaging. Since conventional
+      image sensors can only measure the spatial intensity distribution, phase retrieval arises as the
+      central problem in wavefront sensing. Conventional interferometric approaches like phase-shifting
+      interferometry (PSI) can recover phase information, but they rely on a stable reference beam that is
+      difficult to realize in practical settings. To overcome this limitation, we propose a novel
+      self-reference framework that relies on interference between shifted copies of the incoming wave;
+      this results in pairwise phase differences between shifted pixels. We formulate an analytical
+      solution for the complete phase retrieval based on the propagation of these differences across a
+      connected graph. Furthermore, we provide a theoretical analysis of optimal measurement patterns,
+      proving that co-prime shifts guarantee a connected graph and bound worst-case error accumulation,
+      yielding a provably robust method. Extensive simulations demonstrate that complete phase profiles
+      can be recovered from as few as eight shifted measurements, outperforming several existing
+      approaches. Finally, we validate our framework using a hardware prototype, demonstrating real
+      experiments for optical phase profile recovery, auto-refocusing, and imaging through scattering
+      media.
+    </p>
+  </section>
+
+
+  <section>
+    <h2>Method</h2>
+
+    <p>
+      We recover an unknown wavefront by interfering it with spatially shifted copies of itself.
+      Four phase-shifted intensity measurements provide pairwise phase differences, which are
+      propagated through a graph to recover the full phase profile relative to a reference pixel.
+    </p>
+
+    <ul class="contributions">
+      <li>
+        <strong>Complete connectivity with co-prime shifts.</strong>
+        Pixels are graph nodes; measured phase differences are edges. Co-prime shifts guarantee
+        every pixel is connected to the reference, enabling complete phase recovery.
+      </li>
+      <li>
+        <strong>Robust shortest-path recovery.</strong>
+        Phase estimates propagate from the reference along shortest paths. Equal-length estimates
+        are averaged for robustness, while longer paths are discarded since they accumulate more noise.
+      </li>
+      <li>
+        <strong>Provably optimal sensing.</strong>
+        For \(N\) pixels, the consecutive co-prime shifts \(s = \lfloor \sqrt{N/2} \rfloor\) and
+        \(t = s + 1\) minimize the maximum hop distance. For \(N = 512\), the optimal shifts are
+        \(s = 16\) and \(t = 17\).
+      </li>
+      <li>
+        <strong>Controlled error propagation.</strong>
+        Phase error increases with hop distance, so minimizing the maximum number of hops bounds
+        the worst-case error and reduces overall accumulated noise.
+      </li>
+    </ul>
+
+    <div class="figure-grid two">
+      <figure>
+        <img src="assets/single_vs_two_shifts_v3.png" alt="Single-shift path graph versus co-prime two-shift graph">
+        <figcaption>A single shift creates long propagation paths, while two co-prime shifts add
+          long-range connections and reduce the maximum hop distance.</figcaption>
+      </figure>
+      <figure>
+        <img src="assets/hw_step_diagram_v4.png" alt="Hardware measurement pipeline diagram">
+        <figcaption>A 4<em>f</em> optical system uses an SLM to generate spatial shifts, record
+          interference measurements, and directly measure amplitude.</figcaption>
+      </figure>
+    </div>
+
+    <div class="figure-grid">
+      <figure class="wide">
+        <img src="assets/mae_vs_hop_and_hop_hist_grid.png" alt="Phase error versus hop distance and hop-distance histograms">
+        <figcaption>Phase error increases with hop distance. The optimal pair \((16, 17)\) minimizes
+          the maximum hop distance and concentrates pixels along shorter recovery paths.</figcaption>
+      </figure>
+    </div>
+  </section>
+  <section>
+    <h2>Real Results</h2>
+
+    <h3>Computational Refocusing</h3>
+    <div class="video-grid">
+      <div class="video-card">
+        <video controls autoplay muted loop playsinline>
+          <source src="assets/intro_digits.mov" type="video/quicktime">
+          <source src="assets/intro_digits.mov" type="video/mp4">
+        </video>
+        <p class="caption">Digits target</p>
+      </div>
+      <div class="video-card">
+        <video controls autoplay muted loop playsinline>
+          <source src="assets/intro_star.mov" type="video/quicktime">
+          <source src="assets/intro_star.mov" type="video/mp4">
+        </video>
+        <p class="caption">Star target</p>
+      </div>
+    </div>
+
+    <h3>Seeing through a scattering media</h3>
+    <div class="figure-grid">
+      <figure class="wide">
+        <img src="assets/diffuser_amp_phase_v2.png" alt="Seeing through a diffuser">
+        <figcaption>Seeing through a diffuser. We recover the scattered complex field and computationally
+          propagate it to the diffuser plane for phase correction. Subsequent propagation to the object
+          plane successfully reveals the target, which is otherwise invisible.</figcaption>
+      </figure>
+    </div>
+
+    <h2>Simulated results</h2>
+    <p>
+      We evaluate phase recovery from shifted interferometric measurements in a synthetic setting,
+      comparing against gradient descent (GD-Random), PnP-FISTA, WISH, and a Deep Image Prior (DIP)
+      baseline across random, quadratic, and smooth phase profiles. We report the mean phase error at
+      SNR &asymp;&nbsp;22&nbsp;dB below, where our method achieves the lowest error for both quadratic
+      and smooth phase profiles.
+    </p>
+    <div class="table-wrap">
+      <table class="results-table">
+        <caption>Phase errors (mean &plusmn; std) at 22&nbsp;dB SNR. Our method achieves the best or
+          second-best results across all phase profiles. (<strong>Best bold</strong>,
+          <u>second-best underlined</u>).</caption>
+        <thead>
+          <tr>
+            <th rowspan="2">Method</th>
+            <th colspan="2">Quadratic phase</th>
+            <th colspan="2">Random phase</th>
+            <th colspan="2">Smooth phase (peaks)</th>
+          </tr>
+          <tr>
+            <th>16</th><th>32</th><th>16</th><th>32</th><th>16</th><th>32</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>GD-Random</td>
+            <td>0.695 &plusmn; 0.365</td><td>0.470 &plusmn; 0.434</td>
+            <td><strong>0.138 &plusmn; 0.148</strong></td><td><strong>0.079 &plusmn; 0.152</strong></td>
+            <td>0.791 &plusmn; 0.361</td><td>0.570 &plusmn; 0.404</td>
+          </tr>
+          <tr>
+            <td>WISH</td>
+            <td>0.852 &plusmn; 0.299</td><td>0.423 &plusmn; 0.366</td>
+            <td>0.854 &plusmn; 0.320</td><td>0.453 &plusmn; 0.377</td>
+            <td>0.898 &plusmn; 0.330</td><td>0.425 &plusmn; 0.367</td>
+          </tr>
+          <tr>
+            <td>PnP-FISTA</td>
+            <td>0.669 &plusmn; 0.341</td><td>0.456 &plusmn; 0.304</td>
+            <td>0.735 &plusmn; 0.329</td><td>0.425 &plusmn; 0.264</td>
+            <td>0.663 &plusmn; 0.341</td><td>0.479 &plusmn; 0.338</td>
+          </tr>
+          <tr>
+            <td>DIP</td>
+            <td>1.486 &plusmn; 0.031</td><td>1.491 &plusmn; 0.051</td>
+            <td>1.495 &plusmn; 0.037</td><td>1.447 &plusmn; 0.065</td>
+            <td>1.442 &plusmn; 0.063</td><td>1.423 &plusmn; 0.081</td>
+          </tr>
+          <tr class="ours">
+            <td>Ours</td>
+            <td><strong>0.158 &plusmn; 0.104</strong></td><td><strong>0.099 &plusmn; 0.083</strong></td>
+            <td><u>0.156 &plusmn; 0.099</u></td><td><u>0.094 &plusmn; 0.075</u></td>
+            <td><strong>0.155 &plusmn; 0.096</strong></td><td><strong>0.097 &plusmn; 0.071</strong></td>
+          </tr>
+          <tr class="ours">
+            <td>Ours with LS</td>
+            <td><u>0.183 &plusmn; 0.082</u></td><td><u>0.126 &plusmn; 0.065</u></td>
+            <td>0.158 &plusmn; 0.075</td><td>0.121 &plusmn; 0.055</td>
+            <td><u>0.205 &plusmn; 0.063</u></td><td><u>0.159 &plusmn; 0.050</u></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="figure-grid">
+      <figure class="wide">
+        <img src="assets/visual_comparison_SNR_22_v2.png" alt="Visual comparison of recovered phase against baseline methods">
+        <figcaption>Phase recovery of smooth and random phase profiles (SNR 22 dB, 16 measurements). Our
+          method achieves the lowest error on smooth profiles and remains competitive for random
+          phases.</figcaption>
+      </figure>
+      <figure class="wide">
+        <img src="assets/phase_recovery_subplots_sns.png" alt="Phase recovery results across test scenes">
+        <figcaption>Phase recovery performance across SNRs in simulations. Our method demonstrates
+          consistent performance across all phase types, maintaining the lowest error in most settings and
+          highly competitive results otherwise. Notably, least-squares refinement (Ours&nbsp;+&nbsp;LS)
+          significantly improves reconstruction accuracy at low SNRs.</figcaption>
+      </figure>
+    </div>
+
+  </section>
+
+  <section>
+    <h2>BibTeX</h2>
+    <p class="section-note">If you find this work useful, please cite it. We will update this
+      citation once the ECCV proceedings version is available.</p>
+    <div class="bibtex">
+      <button class="copy-btn" onclick="navigator.clipboard.writeText(document.getElementById('bibtex-text').innerText); this.innerText='Copied!'; setTimeout(()=>this.innerText='Copy', 1500)">Copy</button>
+      <pre id="bibtex-text">@article{yismaw2026provable,
+  title   = {Provable and Robust Wavefront Sensing via Self-Reference Interferometry},
+  author  = {Yismaw, Nebiyou and Saragadam, Vishwanath and Sankaranarayanan, Aswin C and Asif, M Salman},
+  journal = {arXiv preprint arXiv:2604.03564},
+  year    = {2026}
+}</pre>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  <div class="wrap">
+    <p>Contact: <a href="mailto:nyismaw@ucr.edu">nyismaw@ucr.edu</a>,
+      <a href="mailto:sasif@ucr.edu">sasif@ucr.edu</a></p>
+  </div>
+</footer>
+
+</body>
+</html>
